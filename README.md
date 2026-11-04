@@ -42,3 +42,9 @@ Kui tahad paranduse viia põhivastusesse, kopeeri lehel „Muudatused“ nimekir
 - **👍 Nõustun**: sisse loginud kasutaja saab parandusega nõustuda. Kõige rohkem hääli saanud parandus on esimene.
 
 Kuna parooli ei ole, saab igaüks, kes teab nime, selle nimega sisse logida. Kasutajaid saad vajadusel kustutada Supabase'i Table Editoris (tabel `kasutajad`).
+
+## 6. Kokku pandud küsimused
+
+Sarnased küsimused on pandud kokku: 290 küsimusest on alles 199. Kokku pandi 147 algset küsimust 56 küsimuseks. Iga kokku pandud küsimuse juures on silt „🔗 kokku pandud“. Selle all saab avada algsed küsimused ja vastused. Täielik nimekiri on lehel „Muudatused“.
+
+Andmebaasi pole vaja muuta. Kui vana küsimuse kohta on juba parandusi, hääli või statistikat, näidatakse neid automaatselt uue, kokku pandud küsimuse juures. Ka kasutajate edenemine liigub uue küsimuse alla.
