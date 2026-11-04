@@ -1,3 +1,10 @@
+<!doctype html>
+<html lang="et">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#15202a">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}img{max-width:100%}</style>
 <title>Vangla kordamisküsimused</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -50,7 +57,7 @@ h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.15;margin:
 .tab[aria-current="page"]{background:var(--ink);color:var(--surface)}
 .iconbtn{border:1px solid var(--line);background:var(--surface);width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none}
 .iconbtn svg{width:20px;height:20px}
-@media (max-width:620px){.top .wrap{flex-wrap:wrap;row-gap:4px}.brand{order:1;flex:1}#setBtn{order:2}.tabs{order:3;flex-basis:100%;justify-content:space-between}.tab{flex:1;padding:9px 6px;font-size:.9rem}.top .iconbtn.hide-sm{display:none}}
+@media (max-width:620px){.top .wrap{flex-wrap:wrap;row-gap:4px}.brand{order:1;flex:1}#userBtn{order:2}#setBtn{order:2}.tabs{order:3;flex-basis:100%;justify-content:space-between}.tab{flex:1;padding:9px 6px;font-size:.9rem}.top .iconbtn.hide-sm{display:none}}
 @media (max-width:360px){.tab{padding:8px 6px;font-size:.8rem}}
 
 main{padding-block:20px 80px}
@@ -327,6 +334,20 @@ textarea{width:100%;min-height:130px;border:1px solid var(--line);border-radius:
 .fld{display:grid;gap:4px;margin-top:10px}
 .fld input{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);min-height:46px}
 .lbl2{font-size:.85rem;font-weight:700;color:var(--muted)}
+/* account, votes, leaderboard */
+.userchip{border:1px solid var(--line);background:var(--surface);border-radius:12px;height:42px;padding:0 12px;display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:.9rem;max-width:180px;flex:none}
+.userchip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.userchip svg{width:18px;height:18px;flex:none}
+.userchip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+.vote{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;font-weight:700;font-size:.85rem;min-height:34px;justify-self:start;margin-top:4px}
+.vote[aria-pressed="true"]{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+.lb{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.lb li{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:7px 10px;border-radius:10px;background:var(--surface-2)}
+.lb li.me{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}
+.lb .rk{font-family:var(--f-mono);font-size:.85rem;text-align:center}
+.lb .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb .xp{font-family:var(--f-mono);font-size:.85rem}
+.loginnote{background:var(--accent-soft);color:var(--accent-ink);border-radius:12px;padding:12px 14px;font-weight:700;margin-top:10px}
 /* print */
 @media print{
   body::before,.top,.tools,.toc,.tocbtn,.meta button,.page:not(#page-all){display:none!important}
@@ -343,6 +364,9 @@ textarea{width:100%;min-height:130px;border:1px solid var(--line);border-radius:
 }
 </style>
 
+
+</head>
+<body>
 <header class="top">
   <div class="wrap">
     <button class="brand" id="homeBtn" aria-label="Kordamine, mine avalehele"><i class="pin" aria-hidden="true"></i><span class="t">Kordamine</span></button>
@@ -351,6 +375,7 @@ textarea{width:100%;min-height:130px;border:1px solid var(--line);border-radius:
       <button class="tab" data-page="koik">Kõik küsimused</button>
       <button class="tab" data-page="muudatused">Muudatused</button>
     </nav>
+    <button class="userchip" id="userBtn" aria-label="Logi sisse"></button>
     <button class="iconbtn hide-sm" id="themeBtn" aria-label="Vaheta heledat ja tumedat teemat" title="Hele / tume"></button>
     <button class="iconbtn" id="setBtn" aria-label="Seaded" title="Seaded"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </div>
@@ -414,20 +439,93 @@ function sbHeaders(extra){const h={"apikey":SUPABASE_KEY,"Content-Type":"applica
 async function loadRemote(){if(!REMOTE.on)return;try{
   const r=await fetch(SUPABASE_URL+"/rest/v1/parandused?select=id,question_id,name,text,note,status,created_at&order=created_at.asc",{headers:sbHeaders()});
   if(!r.ok)throw new Error("HTTP "+r.status);const rows=await r.json();REMOTE.ok=true;
-  Object.values(BY).forEach(q=>q.community=[]);rows.forEach(x=>{const q=BY[x.question_id];if(q)q.community.push({name:x.name,text:x.text,note:x.note,status:x.status,ts:x.created_at})});
+  Object.values(BY).forEach(q=>q.community=[]);rows.forEach(x=>{const q=BY[x.question_id];if(q)q.community.push({rid:x.id,name:x.name,text:x.text,note:x.note,status:x.status,ts:x.created_at})});
+  try{const v=await fetch(SUPABASE_URL+"/rest/v1/haaled?select=parandus_id,kasutaja_id",{headers:sbHeaders()});if(v.ok){VOTES.clear();(await v.json()).forEach(h=>{if(!VOTES.has(h.parandus_id))VOTES.set(h.parandus_id,new Set());VOTES.get(h.parandus_id).add(h.kasutaja_id)})}}catch(e){}
   rerender()}catch(e){REMOTE.err=String(e.message||e);REMOTE.ok=false}}
-async function sendRemote(f){const r=await fetch(SUPABASE_URL+"/rest/v1/parandused",{method:"POST",headers:sbHeaders({"Prefer":"return=minimal"}),body:JSON.stringify({question_id:f.id,name:f.name,text:f.text,note:f.note||null})});
-  if(!r.ok)throw new Error("HTTP "+r.status)}
+const VOTES=new Map();
+const vcount=rid=>VOTES.has(rid)?VOTES.get(rid).size:0;
+const voted=rid=>!!(S.user&&VOTES.has(rid)&&VOTES.get(rid).has(S.user.id));
+async function sb(path,opt){const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,Object.assign({headers:sbHeaders(opt&&opt.prefer?{"Prefer":opt.prefer}:null)},opt||{}));if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;throw e}const t=await r.text();return t?JSON.parse(t):null}
+async function toggleVote(rid){if(!S.user){openLogin("Hääletamiseks logi sisse. Selleks on vaja ainult nime.");return}
+  const had=voted(rid);try{
+    if(had){await sb(`haaled?parandus_id=eq.${rid}&kasutaja_id=eq.${S.user.id}`,{method:"DELETE"});VOTES.get(rid).delete(S.user.id)}
+    else{await sb("haaled",{method:"POST",prefer:"return=minimal",body:JSON.stringify({parandus_id:rid,kasutaja_id:S.user.id})});if(!VOTES.has(rid))VOTES.set(rid,new Set());VOTES.get(rid).add(S.user.id)}
+    document.querySelectorAll(`[data-vote="${rid}"]`).forEach(b=>{b.setAttribute("aria-pressed",voted(rid));b.textContent=`👍 Nõustun · ${vcount(rid)}`})
+  }catch(e){toast("Hääletamine ei õnnestunud")}}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-vote]");if(b){e.stopPropagation();toggleVote(+b.dataset.vote)}},true);
+function pushAnswer(id,r){if(!REMOTE.on)return;fetch(SUPABASE_URL+"/rest/v1/rpc/lisa_vastus",{method:"POST",keepalive:true,headers:sbHeaders(),body:JSON.stringify({qid:id,tulemus:r})}).catch(()=>{})}
+/* --- kasutaja: ainult nimi --- */
+let syncT=null;
+function scheduleSync(){if(!S.user||!REMOTE.on)return;clearTimeout(syncT);syncT=setTimeout(()=>pushSync(false),2500)}
+async function pushSync(keep){if(!S.user||!REMOTE.on)return;try{await fetch(SUPABASE_URL+"/rest/v1/kasutajad?id=eq."+S.user.id,{method:"PATCH",keepalive:!!keep,headers:sbHeaders({"Prefer":"return=minimal"}),body:JSON.stringify({xp:S.xp,best:S.best,progress:{q:S.q,days:S.days},updated_at:new Date().toISOString()})})}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"&&S.user){clearTimeout(syncT);pushSync(true)}});
+function mergeRemote(row){const rp=row.progress||{},rq=rp.q||{},out=Object.assign({},S.q);
+  Object.entries(rq).forEach(([id,r])=>{const l=out[id];if(!l){out[id]=r;return}const later=(r.ts||0)>(l.ts||0)?r:l;
+    out[id]={r:Math.max(l.r||0,r.r||0),p:Math.max(l.p||0,r.p||0),w:Math.max(l.w||0,r.w||0),last:later.last,ts:Math.max(l.ts||0,r.ts||0)}});
+  S.q=out;const d=Object.assign({},S.days);Object.entries(rp.days||{}).forEach(([k,v])=>{d[k]=Math.max(d[k]||0,v)});S.days=d;
+  S.xp=Math.max(S.xp||0,row.xp||0);S.best=Math.max(S.best||0,row.best||0)}
+const nameKey=n=>n.trim().toLowerCase();
+async function findUser(name){const rows=await sb(`kasutajad?select=id,name,xp,best,progress&name_key=eq.${encodeURIComponent(nameKey(name))}`);return rows&&rows[0]||null}
+function doLogin(row){mergeRemote(row);S.user={id:row.id,name:row.name};S.name=row.name;save();pushSync(false);updateUserBtn();COURSE.ts=0;
+  if(current==="opi"&&!session)renderHome();else rerender();toast("Tere, "+row.name+"!")}
+async function restoreUser(){if(!S.user||!REMOTE.on)return;try{const rows=await sb(`kasutajad?select=id,name,xp,best,progress&id=eq.${S.user.id}`);
+  if(rows&&rows[0]){mergeRemote(rows[0]);S.user.name=rows[0].name;save();updateUserBtn();if(current==="opi"&&!session)renderHome()}else{S.user=null;save();updateUserBtn()}}catch(e){}}
+function updateUserBtn(){const b=document.getElementById("userBtn");if(!b)return;const ic=svg('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>');
+  b.classList.toggle("on",!!S.user);b.innerHTML=ic+`<span>${S.user?esc(S.user.name):"Logi sisse"}</span>`;b.setAttribute("aria-label",S.user?"Kasutaja "+S.user.name:"Logi sisse")}
+function openLogin(reason){
+  if(S.user){const s=sheet(`<button class="iconbtn close" data-close aria-label="Sulge">✕</button><h2>${esc(S.user.name)}</h2>
+    <p class="muted" style="margin:.4rem 0 0">Oled sisse logitud. Sinu XP, statistika ja raskeimad küsimused salvestuvad ning on alles ka teises seadmes, kui logid seal sisse sama nimega.</p>
+    <div class="loginnote">Teises seadmes sisselogimiseks on vaja ainult nime: ${esc(S.user.name)}</div>
+    <div style="display:flex;gap:10px;margin-top:14px;justify-content:flex-end"><button class="btn ghost" id="lgOut">Logi välja</button><button class="btn primary" data-close>Sulge</button></div>`);
+    $("#lgOut",s).onclick=async()=>{clearTimeout(syncT);await pushSync(false);const keep={theme:S.theme,goal:S.goal};S=blank();S.theme=keep.theme;S.goal=keep.goal;save();s.remove();updateUserBtn();session=null;go(current);toast("Logisid välja. Sinu edenemine on salvestatud.")};return}
+  const s=sheet(`<button class="iconbtn close" data-close aria-label="Sulge">✕</button><h2>Logi sisse</h2>
+    ${reason?`<p class="muted" style="margin:.4rem 0 0">${esc(reason)}</p>`:""}
+    <div class="loginnote">Sisselogimiseks on vaja ainult nime. Parooli ei ole.</div>
+    <div class="fld"><label class="lbl2" for="lgName">Sinu nimi</label><input id="lgName" autocomplete="name" placeholder="Ees- ja perekonnanimi" value="${esc(S.name||"")}"></div>
+    <div id="lgMsg" class="src" style="margin-top:8px"></div>
+    <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end"><button class="btn ghost" data-close>Tühista</button><button class="btn primary" id="lgGo">Logi sisse</button></div>
+    <p class="src" style="margin:14px 0 0">Kui sellist nime veel ei ole, saad kohe konto luua. Teises seadmes logi sisse täpselt sama nimega, siis on sinu XP ja statistika seal olemas. Sinu nimi ja XP on näha edetabelis. Kuna parooli ei ole, saab sinu nimega sisse logida igaüks, kes seda nime teab, seega kasuta ees- ja perekonnanime.</p>`);
+  const inp=$("#lgName",s),msg=$("#lgMsg",s),go2=$("#lgGo",s);inp.focus();
+  if(!REMOTE.on){msg.textContent="Ühine andmebaas pole sellel lehel seadistatud, seega sisse logida ei saa.";go2.disabled=true;return}
+  const run=async()=>{const name=inp.value.trim().replace(/\s+/g," ");if(name.length<2){msg.textContent="Nimi peab olema vähemalt 2 tähemärki.";inp.focus();return}if(name.length>40){msg.textContent="Nimi võib olla kuni 40 tähemärki.";return}
+    go2.disabled=true;msg.textContent="Otsin…";
+    try{const u=await findUser(name);if(u){s.remove();doLogin(u);return}
+      msg.innerHTML=`Kasutajat „${esc(name)}“ veel ei ole.`;go2.disabled=false;go2.textContent=`Loo konto: ${name}`;
+      go2.onclick=async()=>{go2.disabled=true;try{const rows=await sb("kasutajad",{method:"POST",prefer:"return=representation",body:JSON.stringify({name})});s.remove();doLogin(rows[0])}
+        catch(e){if(e.status===409){const u2=await findUser(name).catch(()=>null);if(u2){s.remove();doLogin(u2);return}}msg.textContent="Konto loomine ei õnnestunud. Proovi uuesti.";go2.disabled=false}}}
+    catch(e){msg.textContent="Andmebaasiga ei saanud ühendust. Proovi hiljem uuesti.";go2.disabled=false}};
+  go2.onclick=run;inp.addEventListener("keydown",e=>{if(e.key==="Enter")go2.click()})}
+/* --- kursus: edetabel ja raskeimad --- */
+const COURSE={lb:null,stat:null,ts:0,err:false};
+async function loadCourse(){if(!REMOTE.on){fillCourse();return}if(Date.now()-COURSE.ts<30000&&COURSE.lb){fillCourse();return}
+  try{const [a,b]=await Promise.all([sb("kasutajad?select=id,name,xp&order=xp.desc,name.asc&limit=20"),sb("kysimuste_stat?select=question_id,teadis,osaliselt,ei_teadnud")]);
+    COURSE.lb=a||[];COURSE.stat=b||[];COURSE.ts=Date.now();COURSE.err=false}catch(e){COURSE.err=true}fillCourse()}
+function courseHard(){return (COURSE.stat||[]).map(x=>{const n=x.teadis+x.osaliselt+x.ei_teadnud;return {q:BY[x.question_id],n,bad:n?(x.ei_teadnud+x.osaliselt*.5)/n:0}}).filter(x=>x.q&&x.n>=3&&x.bad>0).sort((a,b)=>b.bad-a.bad||b.n-a.n).slice(0,10)}
+function fillCourse(){const lb=document.getElementById("lbPanel"),cr=document.getElementById("crsPanel");if(!lb||!cr)return;
+  const off=!REMOTE.on||COURSE.err;const offTxt=`<div class="empty">${REMOTE.on?"Andmebaasiga ei saanud ühendust.":"Ühine andmebaas pole sellel lehel seadistatud."}</div>`;
+  lb.innerHTML=`<h3 style="font-size:1.05rem;margin-bottom:10px">Edetabel</h3>`+(off?offTxt:!COURSE.lb?`<div class="empty">Laen…</div>`:
+    (COURSE.lb.length?`<ol class="lb">${COURSE.lb.map(u=>S.user&&u.id===S.user.id?{...u,xp:Math.max(u.xp,S.xp)}:u).sort((a,b)=>b.xp-a.xp).map((u,i)=>`<li class="${S.user&&u.id===S.user.id?"me":""}"><span class="rk">${i+1}.</span><span class="nm">${esc(u.name)}</span><span class="xp">${u.xp} XP</span></li>`).join("")}</ol>`:`<div class="empty">Edetabel on veel tühi.</div>`)+
+    (S.user?(COURSE.lb.some(u=>u.id===S.user.id)?"":`<div class="src" style="margin-top:8px">Sinu XP: ${S.xp}</div>`):`<button class="btn small" id="lbLogin" style="margin-top:12px">Logi sisse, et olla edetabelis</button><div class="src" style="margin-top:6px">Sisselogimiseks on vaja ainult nime.</div>`));
+  const h=courseHard();
+  cr.innerHTML=`<h3 style="font-size:1.05rem;margin-bottom:10px">Kursuse raskeimad küsimused</h3>`+(off?offTxt:!COURSE.stat?`<div class="empty">Laen…</div>`:
+    (h.length?`<ol class="hardlist">${h.map(x=>`<li><span class="cnt">${Math.round(x.bad*100)}%</span><span>${esc(x.q.q)} <span class="src">· ${esc(TOP[x.q.t].short)} · ${x.n} vastust</span></span></li>`).join("")}</ol><button class="btn small" id="drillCourse" style="margin-top:12px">Harjuta neid</button>`
+    :`<div class="empty">Siia ilmuvad küsimused, mida kogu kursus kõige rohkem valesti vastab. Küsimus jõuab nimekirja, kui sellele on vastatud vähemalt 3 korda.</div>`))+
+    `<div class="src" style="margin-top:8px">% näitab, kui suur osa kõigi vastustest oli vale (osaliselt = pool).</div>`;
+  const ll=document.getElementById("lbLogin");if(ll)ll.onclick=()=>openLogin();
+  const dc=document.getElementById("drillCourse");if(dc)dc.onclick=()=>openModes(h.map(x=>x.q),"Kursuse raskeimad")}
+
+async function sendRemote(f){const r=await fetch(SUPABASE_URL+"/rest/v1/parandused",{method:"POST",headers:sbHeaders({"Prefer":"return=representation"}),body:JSON.stringify({question_id:f.id,name:f.name,text:f.text,note:f.note||null})});
+  if(!r.ok)throw new Error("HTTP "+r.status);try{const j=await r.json();return j&&j[0]&&j[0].id}catch(e){return null}}
 function rerender(){if(current==="koik")drawAll();else if(current==="muudatused")renderChanges()}
 const CLUSTER={};QS.forEach(q=>{CLUSTER[q.id]=new Set([q.id,...q.see]);});
 
 /* ---------- storage ---------- */
 const KEY="vangla-kordamine-v1";
-function blank(){return{q:{},xp:0,days:{},best:0,reports:[],fixes:[],name:"",goal:30,theme:null}}
+function blank(){return{q:{},xp:0,days:{},best:0,reports:[],fixes:[],name:"",goal:30,theme:null,user:null}}
 let S=blank();
 try{const raw=localStorage.getItem(KEY);if(raw){S=Object.assign(blank(),JSON.parse(raw));}}catch(e){}
 if(!Array.isArray(S.fixes))S.fixes=[];
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}if(S.user&&typeof scheduleSync==="function")scheduleSync()}
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 function streak(){let n=0;const d=new Date();if(!S.days[today()])d.setDate(d.getDate()-1);
   for(;;){const k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");if(S.days[k]>0){n++;d.setDate(d.getDate()-1)}else break}return n}
@@ -468,10 +566,10 @@ function badge(q,clickable){
   return `<span class="badge b-unv">⚠ kontrollimata</span>`}
 function peopleHTML(q){if(!q.people||!q.people.length)return "";return `<div class="people"><div class="who">Keda tean, kes seda kannab</div><ul>${q.people.map(p=>`<li>${p.name?`<b>${esc(p.name)}</b> – `:""}${esc(p.role)} <span class="src">(${esc(p.src)})</span></li>`).join("")}</ul></div>`}
 function addBadge(q){return q.added?`<span class="badge b-add">➕ lisatud</span>`:""}
-function proposals(q){const c=(q.community||[]).map(x=>({...x,mine:false})),m=S.fixes.filter(f=>f.id===q.id).map(x=>({...x,mine:true}));return [...c,...m]}
+function proposals(q){const c=(q.community||[]).map(x=>({...x,mine:false})).sort((a,b)=>vcount(b.rid)-vcount(a.rid)),m=S.fixes.filter(f=>f.id===q.id).map(x=>({...x,mine:true}));return [...c,...m]}
 function stLabel(p){return p.mine?`<span class="badge b-unv">📱 ainult sinu seadmes</span>`:""}
 function cfixHTML(q){const ps=proposals(q);if(!ps.length)return "";
-  return `<div class="cfix"><div class="row"><span class="who">Veebilehel olev vastus</span><span class="txt">${esc(q.a)}</span></div>${ps.map(p=>`<div class="row ${p.mine?"own":""}"><span class="who">${esc(p.name||"Nimetu")} – parandatud vastus ${stLabel(p)}</span><span class="txt">${esc(p.text)}</span>${p.note?`<span class="nt">Põhjus / allikas: ${esc(p.note)}</span>`:""}</div>`).join("")}</div>`}
+  return `<div class="cfix"><div class="row"><span class="who">Veebilehel olev vastus</span><span class="txt">${esc(q.a)}</span></div>${ps.map(p=>`<div class="row ${p.mine?"own":""}"><span class="who">${esc(p.name||"Nimetu")} – parandatud vastus ${stLabel(p)}</span><span class="txt">${esc(p.text)}</span>${p.note?`<span class="nt">Põhjus / allikas: ${esc(p.note)}</span>`:""}${p.rid?`<button class="vote" data-vote="${p.rid}" aria-pressed="${voted(p.rid)}">👍 Nõustun · ${vcount(p.rid)}</button>`:""}</div>`).join("")}</div>`}
 function diffHTML(q){return `<div class="diff"><div class="lbl">Algne vastus</div><div class="old">${esc(q.orig)}</div><div class="lbl">Uus vastus</div><div class="new">${esc(q.a)}</div><div><b>Miks:</b> ${esc(q.why)}</div><div class="src"><b>Allikas:</b> ${esc(q.src)}</div></div>`}
 
 /* ---------- routing ---------- */
@@ -500,6 +598,7 @@ function renderHome(){
       <p>${QS.length} küsimust ${DATA.topics.length} teemast. Vali teema ja õpi mälukaartide, kirjutamise, kiirvooru või paaride mänguga.</p>
       <div class="lvl"><span class="name">${LEVELS[li][1]}</span><div class="xpbar" aria-label="Taseme edenemine"><i style="width:0" data-w="${Math.min(100,pct*100)}%"></i></div><span class="mono muted">${S.xp} XP</span></div>
       <div class="src" style="margin-top:6px">${nxt?`Järgmine tase „${nxt[1]}“ ${nxt[0]} XP juures`:"Kõrgeim tase saavutatud"}</div>
+      ${S.user?`<div class="src" style="margin-top:6px">Sisse logitud: <b>${esc(S.user.name)}</b> · edenemine salvestub ka teistesse seadmetesse</div>`:REMOTE.on?`<button class="btn small accent" id="heroLogin" style="margin-top:12px">Logi sisse – vaja on ainult nime</button>`:""}
     </div>
     <div class="kpis">
       <div class="panel kpi"><b>${learned}</b><span>õpitud küsimust / ${QS.length}</span></div>
@@ -522,13 +621,15 @@ function renderHome(){
       <div class="legend"><span><i style="background:var(--ok)"></i>teadsin</span><span><i style="background:var(--warn)"></i>osaliselt</span><span><i style="background:var(--bad)"></i>ei teadnud</span><span><i style="background:var(--surface-2);border:1px solid var(--line)"></i>õppimata</span></div>
       <div class="bars">${DATA.topics.map(t=>barRow(t.short,QS.filter(q=>q.t===t.key),`data-exp="${t.key}"`)+`<div class="subbars" id="sb-${t.key}" hidden>${t.subs.map((s,si)=>barRow(s.name,QS.filter(q=>q.t===t.key&&q.si===si),"")).join("")}</div>`).join("")}</div>
       <div class="src" style="margin-top:8px">Puuduta teemat, et näha alagruppe.</div></div>
-    <div class="panel"><h3 style="font-size:1.05rem;margin-bottom:10px">Kõige raskemad küsimused</h3>
+    <div class="panel"><h3 style="font-size:1.05rem;margin-bottom:10px">Sinu raskeimad küsimused</h3>
       ${hard.length?`<ol class="hardlist">${hard.map(q=>`<li><span class="cnt">${st(q.id).w}×</span><span>${esc(q.q)} <span class="src">· ${esc(TOP[q.t].short)}</span></span></li>`).join("")}</ol><button class="btn small" id="drillHard" style="margin-top:12px">Harjuta neid</button>`:`<div class="empty">Siia ilmuvad küsimused, millele oled kõige rohkem kordi valesti vastanud.</div>`}
     </div>
   </div>`;
+  el.insertAdjacentHTML("beforeend",`<div class="sechead"><h2>Kursus</h2><span class="src">Kõigi lehe kasutajate andmed</span></div><div class="stats"><div class="panel" id="lbPanel"></div><div class="panel" id="crsPanel"></div></div>`);loadCourse();
   requestAnimationFrame(()=>requestAnimationFrame(()=>{el.querySelectorAll(".ring .fg").forEach(c=>c.style.strokeDashoffset=c.dataset.off);el.querySelectorAll("[data-w]").forEach(i=>i.style.width=i.dataset.w)}));
   el.querySelectorAll(".tcard").forEach(b=>b.onclick=()=>openPicker(b.dataset.topic));
   el.querySelectorAll("[data-exp]").forEach(b=>b.onclick=()=>{const s=document.getElementById("sb-"+b.dataset.exp);s.hidden=!s.hidden});
+  const hl_=$("#heroLogin");if(hl_)hl_.onclick=()=>openLogin();
   $("#mixAll").onclick=()=>openModes(QS.slice(),"Kõik teemad");
   $("#mixHard").onclick=()=>openModes(QS.filter(q=>st(q.id).w>0),"Rasked küsimused");
   $("#mixFix").onclick=()=>openModes(QS.filter(q=>q.status==="fix"),"Parandatud vastused");
@@ -564,7 +665,7 @@ function rate(id,r,silent){const s=S.q[id]||(S.q[id]={r:0,p:0,w:0,last:null});
   S.days[today()]=(S.days[today()]||0)+1;
   let gain=0;if(session){if(r==="yes"){session.combo++;session.maxCombo=Math.max(session.maxCombo,session.combo)}else session.combo=0;
     gain=r==="yes"?10+Math.min(10,Math.floor(session.combo/3)*2):r==="part"?4:0;session.xp+=gain;session.res[r]++;if(r!=="yes")session.wrong.add(id);}
-  const before=levelOf(S.xp);S.xp+=gain;save();
+  pushAnswer(id,r);const before=levelOf(S.xp);S.xp+=gain;save();
   if(gain&&!silent){const f=$("#flash");f.className="flash";void f.offsetWidth;if(r==="yes")f.className="flash g";floatXP(gain)}
   if(levelOf(S.xp)>before)levelUp(levelOf(S.xp));
   return gain}
@@ -587,7 +688,7 @@ function fontCls(q){const n=q.variants.join(" ").length;return n>480?"xs":n>260?
 function reportBtn(id){return `<button class="btn small ghost" data-report="${id}">✎ Paku parandust</button>`}
 function bindReports(el){el.querySelectorAll("[data-report]").forEach(b=>b.onclick=e=>{e.stopPropagation();openReport(b.dataset.report)})}
 function openReport(id){const q=BY[id];const s=sheet(`<button class="iconbtn close" data-close aria-label="Sulge">✕</button><h2>Paku parandust</h2><p class="muted" style="margin:.4rem 0 0">${esc(TOP[q.t].short)} · ${q.num}. ${esc(q.q)}</p>
-  <div class="fld"><label class="lbl2" for="fxName">Sinu nimi</label><input id="fxName" autocomplete="name" value="${esc(S.name||"")}" placeholder="Näiteks Chris"></div>
+  <div class="fld"><label class="lbl2" for="fxName">Sinu nimi</label><input id="fxName" autocomplete="name" value="${esc(S.user?S.user.name:(S.name||""))}" placeholder="Näiteks Chris"></div>
   <div class="fld"><label class="lbl2" for="fxText">Parandatud vastus</label><textarea id="fxText">${esc(q.a)}</textarea></div>
   <div class="fld"><label class="lbl2" for="fxNote">Põhjus või allikas (soovi korral)</label><input id="fxNote" placeholder="Näiteks loeng 4, slaid 17"></div>
   <p class="src" style="margin:10px 0 0">${REMOTE.on?"Parandus saadetakse ühisesse andmebaasi ja on kohe kõigile näha vana vastuse all.":"Parandus salvestub selles brauseris ja ilmub vana vastuse alla. Lehel „Muudatused“ saad selle kopeerida ja edasi saata."}</p>
@@ -596,7 +697,7 @@ function openReport(id){const q=BY[id];const s=sheet(`<button class="iconbtn clo
     if(!name){$("#fxName",s).focus();toast("Lisa oma nimi");return}if(!text||text===q.a){$("#fxText",s).focus();toast("Muuda vastust");return}
     S.name=name;save();const f={id,name,text,note,ts:Date.now()};const btn=$("#fxSave",s);btn.disabled=true;btn.textContent="Saadan…";
     const done=msg=>{s.remove();toast(msg);rerender();if(session&&session.mode==="flash"){}};
-    if(REMOTE.on){sendRemote(f).then(()=>{(q.community=q.community||[]).push({name,text,note,status:"kinnitamata",ts:new Date().toISOString()});done("Parandus saadetud ja kõigile näha")})
+    if(REMOTE.on){sendRemote(f).then(rid=>{(q.community=q.community||[]).push({rid,name,text,note,status:"kinnitamata",ts:new Date().toISOString()});done("Parandus saadetud ja kõigile näha")})
       .catch(()=>{S.fixes.push(f);save();done("Ei saanud saata, parandus jäi sinu seadmesse")})}
     else{S.fixes.push(f);save();done("Parandus salvestatud sinu seadmesse")}}}
 
@@ -799,11 +900,15 @@ $("#setBtn").onclick=()=>{const s=sheet(`<button class="iconbtn close" data-clos
   s.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>{S.theme=b.dataset.th||null;save();applyTheme();s.querySelectorAll("[data-th]").forEach(x=>x.setAttribute("aria-pressed",x===b))});
   $("#cpRep",s).onclick=()=>copyText(fixesText(),$("#cpFb",s));
   $("#reset",s).onclick=()=>{$("#resetConfirm",s).innerHTML=`<div class="warnbox" style="margin-top:10px">Kas kustutada kogu edenemine, XP, statistika ja sinu parandused? Seda ei saa tagasi võtta.<div style="display:flex;gap:8px;margin-top:10px"><button class="btn small" id="rNo">Ei</button><button class="btn small" id="rYes" style="background:var(--bad);color:#fff">Jah, alusta otsast</button></div></div>`;
-    $("#rNo",s).onclick=()=>$("#resetConfirm",s).innerHTML="";$("#rYes",s).onclick=()=>{const th=S.theme,nm=S.name;S=blank();S.theme=th;S.name=nm;save();s.remove();session=null;toast("Edenemine kustutatud");go(current)}}};
+    $("#rNo",s).onclick=()=>$("#resetConfirm",s).innerHTML="";$("#rYes",s).onclick=()=>{const th=S.theme,nm=S.name,us=S.user;S=blank();S.theme=th;S.name=nm;S.user=us;save();if(us){clearTimeout(syncT);pushSync(false)}s.remove();session=null;toast("Edenemine kustutatud");go(current)}}};
 
 addEventListener("beforeprint",()=>{AS.print=true;if(!$("#page-all").dataset.built)renderAll();else drawAll()});
 addEventListener("afterprint",()=>{AS.print=false;if(current==="koik")drawAll()});
+document.getElementById("userBtn").onclick=()=>openLogin();updateUserBtn();
 go(location.hash.slice(1)||"opi");
-loadRemote();
+loadRemote();restoreUser();
 })();
 </script>
+
+</body>
+</html>
