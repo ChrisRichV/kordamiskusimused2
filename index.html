@@ -465,7 +465,7 @@ function badge(q,clickable){
 function peopleHTML(q){if(!q.people||!q.people.length)return "";return `<div class="people"><div class="who">Keda tean, kes seda kannab</div><ul>${q.people.map(p=>`<li>${p.name?`<b>${esc(p.name)}</b> – `:""}${esc(p.role)} <span class="src">(${esc(p.src)})</span></li>`).join("")}</ul></div>`}
 function addBadge(q){return q.added?`<span class="badge b-add">➕ lisatud</span>`:""}
 function proposals(q){const c=(q.community||[]).map(x=>({...x,mine:false})),m=S.fixes.filter(f=>f.id===q.id).map(x=>({...x,mine:true}));return [...c,...m]}
-function stLabel(p){if(p.mine)return `<span class="badge b-unv">📱 ainult sinu seadmes</span>`;return p.status==="kinnitatud"?`<span class="badge b-ok">✓ kinnitatud</span>`:`<span class="badge b-unv">⏳ kinnitamata</span>`}
+function stLabel(p){return p.mine?`<span class="badge b-unv">📱 ainult sinu seadmes</span>`:""}
 function cfixHTML(q){const ps=proposals(q);if(!ps.length)return "";
   return `<div class="cfix"><div class="row"><span class="who">Veebilehel olev vastus</span><span class="txt">${esc(q.a)}</span></div>${ps.map(p=>`<div class="row ${p.mine?"own":""}"><span class="who">${esc(p.name||"Nimetu")} – parandatud vastus ${stLabel(p)}</span><span class="txt">${esc(p.text)}</span>${p.note?`<span class="nt">Põhjus / allikas: ${esc(p.note)}</span>`:""}</div>`).join("")}</div>`}
 function diffHTML(q){return `<div class="diff"><div class="lbl">Algne vastus</div><div class="old">${esc(q.orig)}</div><div class="lbl">Uus vastus</div><div class="new">${esc(q.a)}</div><div><b>Miks:</b> ${esc(q.why)}</div><div class="src"><b>Allikas:</b> ${esc(q.src)}</div></div>`}
@@ -586,13 +586,13 @@ function openReport(id){const q=BY[id];const s=sheet(`<button class="iconbtn clo
   <div class="fld"><label class="lbl2" for="fxName">Sinu nimi</label><input id="fxName" autocomplete="name" value="${esc(S.name||"")}" placeholder="Näiteks Chris"></div>
   <div class="fld"><label class="lbl2" for="fxText">Parandatud vastus</label><textarea id="fxText">${esc(q.a)}</textarea></div>
   <div class="fld"><label class="lbl2" for="fxNote">Põhjus või allikas (soovi korral)</label><input id="fxNote" placeholder="Näiteks loeng 4, slaid 17"></div>
-  <p class="src" style="margin:10px 0 0">${REMOTE.on?"Parandus saadetakse ühisesse andmebaasi ja on kõigile näha märkega „kinnitamata“, kuni Chris selle üle vaatab.":"Parandus salvestub selles brauseris ja ilmub vana vastuse alla. Lehel „Muudatused“ saad selle kopeerida ja edasi saata."}</p>
+  <p class="src" style="margin:10px 0 0">${REMOTE.on?"Parandus saadetakse ühisesse andmebaasi ja on kohe kõigile näha vana vastuse all.":"Parandus salvestub selles brauseris ja ilmub vana vastuse alla. Lehel „Muudatused“ saad selle kopeerida ja edasi saata."}</p>
   <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end"><button class="btn ghost" data-close>Tühista</button><button class="btn primary" id="fxSave">Salvesta parandus</button></div>`);
   $("#fxText",s).focus();$("#fxSave",s).onclick=()=>{const name=$("#fxName",s).value.trim(),text=$("#fxText",s).value.trim(),note=$("#fxNote",s).value.trim();
     if(!name){$("#fxName",s).focus();toast("Lisa oma nimi");return}if(!text||text===q.a){$("#fxText",s).focus();toast("Muuda vastust");return}
     S.name=name;save();const f={id,name,text,note,ts:Date.now()};const btn=$("#fxSave",s);btn.disabled=true;btn.textContent="Saadan…";
     const done=msg=>{s.remove();toast(msg);rerender();if(session&&session.mode==="flash"){}};
-    if(REMOTE.on){sendRemote(f).then(()=>{(q.community=q.community||[]).push({name,text,note,status:"kinnitamata",ts:new Date().toISOString()});done("Parandus saadetud. See on näha märkega „kinnitamata“.")})
+    if(REMOTE.on){sendRemote(f).then(()=>{(q.community=q.community||[]).push({name,text,note,status:"kinnitamata",ts:new Date().toISOString()});done("Parandus saadetud ja kõigile näha")})
       .catch(()=>{S.fixes.push(f);save();done("Ei saanud saata, parandus jäi sinu seadmesse")})}
     else{S.fixes.push(f);save();done("Parandus salvestatud sinu seadmesse")}}}
 
@@ -748,7 +748,7 @@ function jumpTo(id){const q=BY[id];if(!q)return;AS.open.add(q.t);AS.open.add(q.t
   drawAll();const el=document.getElementById("q-"+id);if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.remove("flashme");void el.offsetWidth;el.classList.add("flashme")}}
 
 /* ---------- CHANGES ---------- */
-function fixesText(){const items=QS.filter(q=>proposals(q).length);return "PARANDUSETTEPANEKUD\n\n"+items.map(q=>`[${TOP[q.t].title}] ${q.num>100?"P"+(q.num-100):q.num}. ${q.q}\nVEEBILEHEL OLEV VASTUS: ${q.a.replace(/\n/g," / ")}\n`+proposals(q).map(f=>`${f.name} – PARANDATUD VASTUS (${f.mine?"ainult seadmes":f.status}): ${f.text.replace(/\n/g," / ")}${f.note?"\n  PÕHJUS / ALLIKAS: "+f.note:""}`).join("\n")).join("\n\n")}
+function fixesText(){const items=QS.filter(q=>proposals(q).length);return "PARANDUSETTEPANEKUD\n\n"+items.map(q=>`[${TOP[q.t].title}] ${q.num>100?"P"+(q.num-100):q.num}. ${q.q}\nVEEBILEHEL OLEV VASTUS: ${q.a.replace(/\n/g," / ")}\n`+proposals(q).map(f=>`${f.name} – PARANDATUD VASTUS${f.mine?" (ainult seadmes)":""}: ${f.text.replace(/\n/g," / ")}${f.note?"\n  PÕHJUS / ALLIKAS: "+f.note:""}`).join("\n")).join("\n\n")}
 function changesText(){const fx=QS.filter(q=>q.status==="fix");return `PARANDATUD VASTUSED (${fx.length})\n\n`+fx.map(q=>`[${TOP[q.t].title}] ${q.num}. ${q.q}\nVANA: ${q.orig.replace(/\n/g," / ")}\nUUS: ${q.a.replace(/\n/g," / ")}\nPÕHJUS: ${q.why}\nALLIKAS: ${q.src}`).join("\n\n")}
 function renderChanges(){const el=$("#page-ch");const fx=QS.filter(q=>q.status==="fix"),ok=QS.filter(q=>q.status==="ok"),un=QS.filter(q=>q.status==="unv");
   const flagged=un.filter(q=>/vajab kinnitust|mitmetähenduslik|ei õnnestunud|poolik|ei ole üheski|samas ajavahemikus|ei kinnita|ei maini/i.test(q.note));
