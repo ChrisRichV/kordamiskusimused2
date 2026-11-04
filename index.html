@@ -168,7 +168,7 @@ button.badge{cursor:pointer}
 .combo{font-family:var(--f-mono);font-size:.9rem;min-width:52px;text-align:right}
 .combo.hot{color:var(--bad)}
 .xpchip{font-family:var(--f-mono);font-size:.85rem;background:var(--accent-soft);color:var(--accent-ink);border-radius:99px;padding:4px 10px}
-.stage{position:relative;height:min(66vh,540px);perspective:1400px;margin-bottom:14px;touch-action:none;user-select:none;-webkit-user-select:none}
+.stage{position:relative;height:min(66vh,540px);height:clamp(340px,calc(100dvh - 300px),600px);perspective:1400px;margin-bottom:14px;touch-action:none;user-select:none;-webkit-user-select:none}
 .fc{position:absolute;inset:0;transition:transform .35s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d;cursor:pointer}
 .fc.drag{transition:none}
 .fc.fly{transition:transform .26s ease-in,opacity .26s}
@@ -181,7 +181,11 @@ button.badge{cursor:pointer}
 .face .qtext{font-family:var(--f-display);font-weight:800;font-size:clamp(1.3rem,4.6vw,1.75rem);line-height:1.22;margin:auto 0;text-wrap:balance}
 .face .tap{font-size:.85rem;color:var(--muted);text-align:center}
 .face .qsmall{font-weight:700;font-size:.95rem;color:var(--muted);line-height:1.35}
-.face .abody{flex:1;overflow:auto;font-size:1.1rem;padding-right:4px}
+.face .abody{flex:1;overflow:auto;font-size:1.1rem;padding-right:4px;touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;min-height:0}
+.face .abody.more{-webkit-mask-image:linear-gradient(#000 85%,transparent);mask-image:linear-gradient(#000 85%,transparent)}
+.face .abody.more.end{-webkit-mask-image:none;mask-image:none}
+.scrollhint{font-size:.78rem;color:var(--muted);text-align:center;margin-top:-6px}
+@media (max-width:420px){main{padding-block:12px 60px}.face .afoot .src{font-size:.74rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1 1 140px}.face .afoot .btn.small{min-height:34px;padding:5px 10px;font-size:.82rem}.fc .face{padding:16px;gap:10px;border-radius:20px}.face .qsmall{font-size:.88rem}.face .abody{font-size:1rem}.face .abody.s{font-size:.95rem}.face .abody.xs{font-size:.88rem}.rate{min-height:54px}.hint{display:none}}
 .face .abody.s{font-size:1rem}.face .abody.xs{font-size:.92rem}
 .face .afoot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
 .tint{position:absolute;inset:0;border-radius:24px;pointer-events:none;opacity:0;display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:1.6rem;color:#fff;z-index:3}
@@ -608,18 +612,22 @@ function renderFlash(){const s=session,el=$("#page-opi");if(s.idx>=s.queue.lengt
   <div class="hint">Tühik pöörab kaardi, nooled hindavad.</div></div>`;
   bindQuit();bindReports(el);
   const fc=$("#fc"),tint=$("#tint");let flipped=false;
+  const ab=$("#fc .back .abody");if(ab&&ab.scrollHeight>ab.clientHeight+4){ab.classList.add("more");ab.insertAdjacentHTML("afterend",'<div class="scrollhint">↓ keri vastust</div>');ab.addEventListener("scroll",()=>ab.classList.toggle("end",ab.scrollTop+ab.clientHeight>=ab.scrollHeight-4))}
   const flip=()=>{flipped=!flipped;fc.classList.toggle("flipped",flipped)};
   el.querySelectorAll(".rate").forEach(b=>b.onclick=()=>answer(b.dataset.r));
-  let sx=0,sy=0,dx=0,dy=0,down=false,moved=false;
-  fc.addEventListener("pointerdown",e=>{if(e.target.closest("button,summary,details"))return;down=true;moved=false;sx=e.clientX;sy=e.clientY;dx=dy=0;fc.classList.add("drag");fc.setPointerCapture(e.pointerId)});
+  let sx=0,sy=0,dx=0,dy=0,down=false,moved=false,zone=false;
+  const reset=()=>{down=false;fc.classList.remove("drag");fc.style.transform="";tint.style.opacity=0};
+  fc.addEventListener("pointerdown",e=>{if(e.target.closest("button,summary,details"))return;down=true;moved=false;sx=e.clientX;sy=e.clientY;dx=dy=0;
+    zone=flipped&&!!e.target.closest(".abody")&&ab&&ab.scrollHeight>ab.clientHeight+4;fc.classList.add("drag");if(!zone)fc.setPointerCapture(e.pointerId)});
   fc.addEventListener("pointermove",e=>{if(!down)return;dx=e.clientX-sx;dy=e.clientY-sy;if(Math.abs(dx)+Math.abs(dy)>8)moved=true;
+    if(zone&&moved&&Math.abs(dy)>=Math.abs(dx)){moved=true;reset();return}
     fc.style.transform=`translate(${dx}px,${Math.min(dy,40)}px) rotate(${dx/18}deg)`;
     const dir=Math.abs(dx)>Math.abs(dy)?(dx>0?"yes":"no"):(dy<0?"part":null);const a=Math.min(1,Math.max(Math.abs(dx),-dy)/140);
     tint.style.opacity=dir?a*.85:0;tint.style.background=dir==="yes"?"var(--ok)":dir==="no"?"var(--bad)":"var(--warn)";tint.textContent=dir==="yes"?"Teadsin":dir==="no"?"Ei teadnud":dir?"Osaliselt":""});
   const up=e=>{if(!down)return;down=false;fc.classList.remove("drag");
-    if(dx>90)return answer("yes");if(dx<-90)return answer("no");if(dy<-80&&Math.abs(dx)<90)return answer("part");
+    if(dx>90)return answer("yes");if(dx<-90)return answer("no");if(!zone&&dy<-80&&Math.abs(dx)<90)return answer("part");
     fc.style.transform="";tint.style.opacity=0;if(!moved&&!e.target.closest("button,summary,details,a"))flip()};
-  fc.addEventListener("pointerup",up);fc.addEventListener("pointercancel",()=>{down=false;fc.classList.remove("drag");fc.style.transform="";tint.style.opacity=0});
+  fc.addEventListener("pointerup",up);fc.addEventListener("pointercancel",reset);
   s.key=e=>{if(e.target.matches("textarea,input"))return;if(e.code==="Space"){e.preventDefault();flip()}else if(e.key==="ArrowRight")answer("yes");else if(e.key==="ArrowLeft")answer("no");else if(e.key==="ArrowUp"){e.preventDefault();answer("part")}};
   let busy=false;
   function answer(r){if(busy)return;busy=true;rate(q.id,r);
