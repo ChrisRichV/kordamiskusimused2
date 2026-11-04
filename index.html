@@ -446,7 +446,7 @@ const VOTES=new Map();
 const vcount=rid=>VOTES.has(rid)?VOTES.get(rid).size:0;
 const voted=rid=>!!(S.user&&VOTES.has(rid)&&VOTES.get(rid).has(S.user.id));
 async function sb(path,opt){const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,Object.assign({headers:sbHeaders(opt&&opt.prefer?{"Prefer":opt.prefer}:null)},opt||{}));if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;throw e}const t=await r.text();return t?JSON.parse(t):null}
-async function toggleVote(rid){if(!S.user){openLogin("Hääletamiseks logi sisse. Selleks on vaja ainult nime.");return}
+async function toggleVote(rid){if(!S.user){openLogin("Hääletamiseks loo kasutaja või logi sisse. Selleks on vaja ainult nime.");return}
   const had=voted(rid);try{
     if(had){await sb(`haaled?parandus_id=eq.${rid}&kasutaja_id=eq.${S.user.id}`,{method:"DELETE"});VOTES.get(rid).delete(S.user.id)}
     else{await sb("haaled",{method:"POST",prefer:"return=minimal",body:JSON.stringify({parandus_id:rid,kasutaja_id:S.user.id})});if(!VOTES.has(rid))VOTES.set(rid,new Set());VOTES.get(rid).add(S.user.id)}
@@ -466,35 +466,47 @@ function mergeRemote(row){const rp=row.progress||{},rq=rp.q||{},out=Object.assig
   S.xp=Math.max(S.xp||0,row.xp||0);S.best=Math.max(S.best||0,row.best||0)}
 const nameKey=n=>n.trim().toLowerCase();
 async function findUser(name){const rows=await sb(`kasutajad?select=id,name,xp,best,progress&name_key=eq.${encodeURIComponent(nameKey(name))}`);return rows&&rows[0]||null}
-function doLogin(row){mergeRemote(row);S.user={id:row.id,name:row.name};S.name=row.name;save();pushSync(false);updateUserBtn();COURSE.ts=0;
-  if(current==="opi"&&!session)renderHome();else rerender();toast("Tere, "+row.name+"!")}
+function doLogin(row,isNew){mergeRemote(row);S.user={id:row.id,name:row.name};S.name=row.name;save();pushSync(false);updateUserBtn();COURSE.ts=0;
+  if(current==="opi"&&!session)renderHome();else rerender();toast(isNew?"Kasutaja loodud. Tere, "+row.name+"!":"Tere, "+row.name+"!")}
 async function restoreUser(){if(!S.user||!REMOTE.on)return;try{const rows=await sb(`kasutajad?select=id,name,xp,best,progress&id=eq.${S.user.id}`);
   if(rows&&rows[0]){mergeRemote(rows[0]);S.user.name=rows[0].name;save();updateUserBtn();if(current==="opi"&&!session)renderHome()}else{S.user=null;save();updateUserBtn()}}catch(e){}}
 function updateUserBtn(){const b=document.getElementById("userBtn");if(!b)return;const ic=svg('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>');
-  b.classList.toggle("on",!!S.user);b.innerHTML=ic+`<span>${S.user?esc(S.user.name):"Logi sisse"}</span>`;b.setAttribute("aria-label",S.user?"Kasutaja "+S.user.name:"Logi sisse")}
+  b.classList.toggle("on",!!S.user);b.innerHTML=ic+`<span>${S.user?esc(S.user.name):"Kasutaja"}</span>`;b.setAttribute("aria-label",S.user?"Kasutaja "+S.user.name:"Loo kasutaja või logi sisse")}
 function openLogin(reason){
   if(S.user){const s=sheet(`<button class="iconbtn close" data-close aria-label="Sulge">✕</button><h2>${esc(S.user.name)}</h2>
     <p class="muted" style="margin:.4rem 0 0">Oled sisse logitud. Sinu XP, statistika ja raskeimad küsimused salvestuvad ning on alles ka teises seadmes, kui logid seal sisse sama nimega.</p>
     <div class="loginnote">Teises seadmes sisselogimiseks on vaja ainult nime: ${esc(S.user.name)}</div>
     <div style="display:flex;gap:10px;margin-top:14px;justify-content:flex-end"><button class="btn ghost" id="lgOut">Logi välja</button><button class="btn primary" data-close>Sulge</button></div>`);
     $("#lgOut",s).onclick=async()=>{clearTimeout(syncT);await pushSync(false);const keep={theme:S.theme,goal:S.goal};S=blank();S.theme=keep.theme;S.goal=keep.goal;save();s.remove();updateUserBtn();session=null;go(current);toast("Logisid välja. Sinu edenemine on salvestatud.")};return}
-  const s=sheet(`<button class="iconbtn close" data-close aria-label="Sulge">✕</button><h2>Logi sisse</h2>
+  let mode=reason&&/hääleta/i.test(reason)?"login":"new";
+  const s=sheet(`<button class="iconbtn close" data-close aria-label="Sulge">✕</button><h2>Kasutaja</h2>
     ${reason?`<p class="muted" style="margin:.4rem 0 0">${esc(reason)}</p>`:""}
-    <div class="loginnote">Sisselogimiseks on vaja ainult nime. Parooli ei ole.</div>
-    <div class="fld"><label class="lbl2" for="lgName">Sinu nimi</label><input id="lgName" autocomplete="name" placeholder="Ees- ja perekonnanimi" value="${esc(S.name||"")}"></div>
-    <div id="lgMsg" class="src" style="margin-top:8px"></div>
-    <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end"><button class="btn ghost" data-close>Tühista</button><button class="btn primary" id="lgGo">Logi sisse</button></div>
-    <p class="src" style="margin:14px 0 0">Kui sellist nime veel ei ole, saad kohe konto luua. Teises seadmes logi sisse täpselt sama nimega, siis on sinu XP ja statistika seal olemas. Sinu nimi ja XP on näha edetabelis. Kuna parooli ei ole, saab sinu nimega sisse logida igaüks, kes seda nime teab, seega kasuta ees- ja perekonnanime.</p>`);
-  const inp=$("#lgName",s),msg=$("#lgMsg",s),go2=$("#lgGo",s);inp.focus();
-  if(!REMOTE.on){msg.textContent="Ühine andmebaas pole sellel lehel seadistatud, seega sisse logida ei saa.";go2.disabled=true;return}
-  const run=async()=>{const name=inp.value.trim().replace(/\s+/g," ");if(name.length<2){msg.textContent="Nimi peab olema vähemalt 2 tähemärki.";inp.focus();return}if(name.length>40){msg.textContent="Nimi võib olla kuni 40 tähemärki.";return}
-    go2.disabled=true;msg.textContent="Otsin…";
-    try{const u=await findUser(name);if(u){s.remove();doLogin(u);return}
-      msg.innerHTML=`Kasutajat „${esc(name)}“ veel ei ole.`;go2.disabled=false;go2.textContent=`Loo konto: ${name}`;
-      go2.onclick=async()=>{go2.disabled=true;try{const rows=await sb("kasutajad",{method:"POST",prefer:"return=representation",body:JSON.stringify({name})});s.remove();doLogin(rows[0])}
-        catch(e){if(e.status===409){const u2=await findUser(name).catch(()=>null);if(u2){s.remove();doLogin(u2);return}}msg.textContent="Konto loomine ei õnnestunud. Proovi uuesti.";go2.disabled=false}}}
-    catch(e){msg.textContent="Andmebaasiga ei saanud ühendust. Proovi hiljem uuesti.";go2.disabled=false}};
-  go2.onclick=run;inp.addEventListener("keydown",e=>{if(e.key==="Enter")go2.click()})}
+    <div class="loginnote">Kasutaja tegemiseks ja sisselogimiseks on vaja ainult nime. Parooli ei ole.</div>
+    <div class="chips" role="tablist" style="margin-top:14px"><button class="chip" id="tabNew" role="tab">Loo uus kasutaja</button><button class="chip" id="tabLogin" role="tab">Mul on juba kasutaja</button></div>
+    <div class="fld"><label class="lbl2" for="lgName" id="lgLbl">Sinu nimi</label><input id="lgName" autocomplete="name" placeholder="Ees- ja perekonnanimi" value="${esc(S.name||"")}"></div>
+    <div id="lgMsg" class="src" style="margin-top:8px;min-height:1.2em"></div>
+    <div style="display:flex;gap:10px;margin-top:8px;justify-content:flex-end;flex-wrap:wrap"><button class="btn ghost" data-close>Tühista</button><button class="btn primary" id="lgGo"></button></div>
+    <p class="src" id="lgHelp" style="margin:14px 0 0"></p>`);
+  const inp=$("#lgName",s),msg=$("#lgMsg",s),go2=$("#lgGo",s),help=$("#lgHelp",s);
+  const setMode=m=>{mode=m;$("#tabNew",s).setAttribute("aria-pressed",m==="new");$("#tabLogin",s).setAttribute("aria-pressed",m==="login");msg.textContent="";go2.disabled=false;
+    go2.textContent=m==="new"?"Loo kasutaja":"Logi sisse";
+    help.textContent=m==="new"?"Vali nimi, mida keegi teine kursusel ei kasuta, näiteks ees- ja perekonnanimi. Sinu nimi ja XP on näha edetabelis. Kuna parooli ei ole, saab sinu nimega sisse logida igaüks, kes seda nime teab."
+      :"Kirjuta sama nimi, millega kasutaja tegid. Suured ja väikesed tähed ei loe. Sinu XP, statistika ja raskeimad küsimused tulevad kaasa.";inp.focus()};
+  $("#tabNew",s).onclick=()=>setMode("new");$("#tabLogin",s).onclick=()=>setMode("login");setMode(mode);
+  if(!REMOTE.on){msg.textContent="Ühine andmebaas pole sellel lehel seadistatud, seega kasutajat teha ei saa.";go2.disabled=true;return}
+  const clean=()=>inp.value.trim().replace(/\s+/g," ");
+  const check=name=>{if(name.length<2){msg.textContent="Nimi peab olema vähemalt 2 tähemärki.";inp.focus();return false}if(name.length>40){msg.textContent="Nimi võib olla kuni 40 tähemärki.";return false}return true};
+  const create=async name=>{go2.disabled=true;msg.textContent="Loon kasutajat…";
+    try{const rows=await sb("kasutajad",{method:"POST",prefer:"return=representation",body:JSON.stringify({name})});s.remove();doLogin(rows[0],true)}
+    catch(e){go2.disabled=false;if(e.status===409){msg.innerHTML=`Nimi „${esc(name)}“ on juba olemas. Kui see oled sina, vali „Mul on juba kasutaja“. Muidu vali teine nimi.`}
+      else msg.textContent="Kasutaja tegemine ei õnnestunud. Kontrolli internetiühendust ja proovi uuesti."}};
+  const login=async name=>{go2.disabled=true;msg.textContent="Otsin…";
+    try{const u=await findUser(name);if(u){s.remove();doLogin(u,false);return}
+      go2.disabled=false;msg.innerHTML=`Kasutajat „${esc(name)}“ ei ole. <button class="btn small accent" id="lgMk" style="margin-left:6px">Loo see kasutaja</button>`;
+      $("#lgMk",s).onclick=()=>{setMode("new");inp.value=name;create(name)}}
+    catch(e){go2.disabled=false;msg.textContent="Andmebaasiga ei saanud ühendust. Proovi hiljem uuesti."}};
+  go2.onclick=()=>{const name=clean();if(!check(name))return;mode==="new"?create(name):login(name)};
+  inp.addEventListener("keydown",e=>{if(e.key==="Enter")go2.click()})}
 /* --- kursus: edetabel ja raskeimad --- */
 const COURSE={lb:null,stat:null,ts:0,err:false};
 async function loadCourse(){if(!REMOTE.on){fillCourse();return}if(Date.now()-COURSE.ts<30000&&COURSE.lb){fillCourse();return}
@@ -505,7 +517,7 @@ function fillCourse(){const lb=document.getElementById("lbPanel"),cr=document.ge
   const off=!REMOTE.on||COURSE.err;const offTxt=`<div class="empty">${REMOTE.on?"Andmebaasiga ei saanud ühendust.":"Ühine andmebaas pole sellel lehel seadistatud."}</div>`;
   lb.innerHTML=`<h3 style="font-size:1.05rem;margin-bottom:10px">Edetabel</h3>`+(off?offTxt:!COURSE.lb?`<div class="empty">Laen…</div>`:
     (COURSE.lb.length?`<ol class="lb">${COURSE.lb.map(u=>S.user&&u.id===S.user.id?{...u,xp:Math.max(u.xp,S.xp)}:u).sort((a,b)=>b.xp-a.xp).map((u,i)=>`<li class="${S.user&&u.id===S.user.id?"me":""}"><span class="rk">${i+1}.</span><span class="nm">${esc(u.name)}</span><span class="xp">${u.xp} XP</span></li>`).join("")}</ol>`:`<div class="empty">Edetabel on veel tühi.</div>`)+
-    (S.user?(COURSE.lb.some(u=>u.id===S.user.id)?"":`<div class="src" style="margin-top:8px">Sinu XP: ${S.xp}</div>`):`<button class="btn small" id="lbLogin" style="margin-top:12px">Logi sisse, et olla edetabelis</button><div class="src" style="margin-top:6px">Sisselogimiseks on vaja ainult nime.</div>`));
+    (S.user?(COURSE.lb.some(u=>u.id===S.user.id)?"":`<div class="src" style="margin-top:8px">Sinu XP: ${S.xp}</div>`):`<button class="btn small" id="lbLogin" style="margin-top:12px">Loo kasutaja, et olla edetabelis</button><div class="src" style="margin-top:6px">Kasutaja tegemiseks on vaja ainult nime.</div>`));
   const h=courseHard();
   cr.innerHTML=`<h3 style="font-size:1.05rem;margin-bottom:10px">Kursuse raskeimad küsimused</h3>`+(off?offTxt:!COURSE.stat?`<div class="empty">Laen…</div>`:
     (h.length?`<ol class="hardlist">${h.map(x=>`<li><span class="cnt">${Math.round(x.bad*100)}%</span><span>${esc(x.q.q)} <span class="src">· ${esc(TOP[x.q.t].short)} · ${x.n} vastust</span></span></li>`).join("")}</ol><button class="btn small" id="drillCourse" style="margin-top:12px">Harjuta neid</button>`
@@ -598,7 +610,7 @@ function renderHome(){
       <p>${QS.length} küsimust ${DATA.topics.length} teemast. Vali teema ja õpi mälukaartide, kirjutamise, kiirvooru või paaride mänguga.</p>
       <div class="lvl"><span class="name">${LEVELS[li][1]}</span><div class="xpbar" aria-label="Taseme edenemine"><i style="width:0" data-w="${Math.min(100,pct*100)}%"></i></div><span class="mono muted">${S.xp} XP</span></div>
       <div class="src" style="margin-top:6px">${nxt?`Järgmine tase „${nxt[1]}“ ${nxt[0]} XP juures`:"Kõrgeim tase saavutatud"}</div>
-      ${S.user?`<div class="src" style="margin-top:6px">Sisse logitud: <b>${esc(S.user.name)}</b> · edenemine salvestub ka teistesse seadmetesse</div>`:REMOTE.on?`<button class="btn small accent" id="heroLogin" style="margin-top:12px">Logi sisse – vaja on ainult nime</button>`:""}
+      ${S.user?`<div class="src" style="margin-top:6px">Sisse logitud: <b>${esc(S.user.name)}</b> · edenemine salvestub ka teistesse seadmetesse</div>`:REMOTE.on?`<button class="btn small accent" id="heroLogin" style="margin-top:12px">Loo kasutaja või logi sisse – vaja on ainult nime</button>`:""}
     </div>
     <div class="kpis">
       <div class="panel kpi"><b>${learned}</b><span>õpitud küsimust / ${QS.length}</span></div>
